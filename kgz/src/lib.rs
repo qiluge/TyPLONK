@@ -55,10 +55,14 @@ impl<'a> KzgScheme<'a> {
     pub fn open(&self, mut polynomial: MyPoly, z: impl Into<Fr>) -> KzgOpening {
         let z = z.into();
         let evaluation_at_z = polynomial.evaluate(&z);
+        // p(x)-z
         let first = polynomial.coeffs.first_mut().expect("at least 1");
         *first -= evaluation_at_z;
+        // x-z
         let root = MyPoly::from_coefficients_slice(&[-(z), 1.into()]);
+        // q(x)=(p(x)-z)/(x-z)
         let new_poly = &polynomial / &root;
+        // [q(x)]
         let opening = self.evaluate_in_s(&new_poly);
         KzgOpening(opening, evaluation_at_z)
     }
@@ -73,9 +77,13 @@ impl<'a> KzgScheme<'a> {
         //let g1 = self.0.g1_ref();
         let g2s = self.0.g2s_ref();
         let g2 = self.0.g2_ref();
+        // [s-z]
         let a = g2s.clone().into_projective() - (g2.mul(z.into()));
+        // [p(s)-y]
         let b = commitment.0.into_projective() - G1Point::prime_subgroup_generator().mul(y);
+        // e([q(s)], [s-z])
         let pairing1 = Bls12_381::pairing(opening.0, a);
+        // e([p(s)-y],g2)
         let pairing2 = Bls12_381::pairing(b, g2.clone());
         pairing1 == pairing2
     }
@@ -97,6 +105,7 @@ fn commit() {
     let srs = Srs::from_secret(Fr::from(2), 10);
     let scheme = KzgScheme(&srs);
     let poly = MyPoly::from_coefficients_slice(&[1.into(), 2.into(), 3.into()]);
+    print_poly(&poly);
     let commitment = scheme.commit(&poly);
     let d = Fr::from(1_i32);
     assert_eq!(
