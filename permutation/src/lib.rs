@@ -14,6 +14,7 @@ pub struct Tag {
     pub i: usize,
     pub j: usize,
 }
+
 impl Tag {
     fn to_index(&self, rows: &usize) -> usize {
         self.j + self.i * rows
@@ -24,6 +25,9 @@ impl Tag {
         Tag { i, j }
     }
 }
+
+// C is the num of variable of gate
+// C is usually equal to 3, but for some custom gate, C may not be 3
 #[derive(Default, Debug)]
 pub struct PermutationBuilder<const C: usize> {
     //(i,j)
@@ -92,6 +96,7 @@ impl<const C: usize> PermutationBuilder<C> {
         Permutation { perm: mapping }
     }
 }
+
 #[derive(Debug)]
 pub struct Permutation<const C: usize> {
     perm: Vec<usize>,
@@ -153,6 +158,7 @@ impl<const C: usize> Permutation<C> {
         cosets
     }
 }
+
 #[derive(Debug)]
 pub struct CompiledPermutation<const C: usize> {
     //cols: Vec<Vec<(Fr, Fr)>>,
